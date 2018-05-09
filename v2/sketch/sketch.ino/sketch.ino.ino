@@ -13,8 +13,9 @@ int BUTTON_STOP = 7;
 int hours = 0;
 int minutes = 0;
 int seconds = 0;
+int miliseconds = 0;
 
-int counter_200_ms = 0;
+int counter_50_ms = 0;
 
 int STATE = STATE_INIT;
 
@@ -23,7 +24,7 @@ LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I
 void display_time(void);
 void reset_time(void);
 void increase_time(void);
-void task_200_ms(void);
+void task_50_ms(void);
 void read_buttons(void);
 
 void setup()
@@ -37,22 +38,20 @@ void setup()
   for(int i = 0; i< 3; i++)
   {
     lcd.backlight();
-    delay(100/16);
+    delay(100);
     lcd.noBacklight();
-    delay(100/16);
+    delay(100);
   }
   lcd.backlight(); 
 
   lcd.setCursor(0,0); 
   lcd.print("Cronometru");
-  delay(1000/16);
+  delay(500);
   lcd.setCursor(0,1);
   lcd.print("AEMC");
-  delay(2000/16);  
+  delay(1000);  
 
   lcd.clear();
-  lcd.setCursor(4,0); 
-  //lcd.print("00:00:00");
   display_time();
   lcd.setCursor(0,1);
   lcd.print("START PAUSE STOP");
@@ -62,23 +61,22 @@ void setup()
 
 void loop()
 {
-  task_200_ms();
-  delay(200/16);
+  task_50_ms();
+  delay(12);
 }
 
-void task_200_ms(void)
+void task_50_ms(void)
 {
   read_buttons();
   switch(STATE)
   {
     case STATE_COUNTING:
     {
-      counter_200_ms ++;
-      if (counter_200_ms >= 5)
+      increase_time();
+      display_time();
+      if (counter_50_ms >= 20)
       {
-        counter_200_ms = 0;
-        increase_time();
-        display_time();
+        counter_50_ms = 0;
       }
     }
   }
@@ -86,15 +84,20 @@ void task_200_ms(void)
 
 void increase_time(void)
 {
-  seconds ++;
-  if (seconds >= 60)
+  miliseconds += 50;
+  if (miliseconds >= 1000)
   {
-    seconds = 0;
-    minutes ++;
-    if(minutes >= 60)
+    miliseconds = 0;
+    seconds ++;
+    if (seconds >= 60)
     {
-      minutes = 0;
-      hours ++;
+      seconds = 0;
+      minutes ++;
+      if(minutes >= 60)
+      {
+        minutes = 0;
+        hours ++;
+      }
     }
   }
 }
@@ -104,11 +107,12 @@ void reset_time(void)
   seconds = 0;
   minutes = 0;
   hours = 0;
+  miliseconds = 0;
 }
 
 void display_time(void)
 {
-  lcd.setCursor(4,0); 
+  lcd.setCursor(2,0); 
   lcd.print(hours / 10);
   lcd.print(hours % 10);
   lcd.print(":");
@@ -117,6 +121,10 @@ void display_time(void)
   lcd.print(":");
   lcd.print(seconds / 10);
   lcd.print(seconds % 10);
+  lcd.print(":");
+  lcd.print(miliseconds / 100);
+  lcd.print((miliseconds / 10) % 10);
+  lcd.print(miliseconds % 10);
 }
 
 void read_buttons(void)
