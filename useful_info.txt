@@ -1,0 +1,2 @@
+Convert eagle schematic to ORCAD file.
+https://www.orcad.com/resources/library/migrate-eagle-schematic-and-pcb-data-orcad
